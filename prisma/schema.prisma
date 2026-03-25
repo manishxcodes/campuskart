@@ -13,7 +13,7 @@ datasource db {
 
 model User {
   id                 String          @id @default(cuid())
-  name               String
+  name               String?
   email              String          @unique
   emailVerified      DateTime?
   image              String?
@@ -35,8 +35,8 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String
-  access_token      String
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
