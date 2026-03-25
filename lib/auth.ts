@@ -1,96 +1,163 @@
-import { PrismaAdapter } from "@auth/prisma-adapter";
-import NextAuth, { NextAuthConfig }  from "next-auth";
+import NextAuth from "next-auth";
 import { prisma } from "./prisma";
-import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
-import bcrypt from 'bcrypt';
+import bcrypt from "bcrypt";
+import { authConfig } from "./auth.config";
 
-
-export const authConfig: NextAuthConfig = {
-    adapter: PrismaAdapter(prisma),
+export const { handlers, auth, signIn, signOut } = NextAuth({
+    session: { strategy: "jwt" },
     providers: [
-        Google({
-            clientId: process.env.GOOGLE_CLIENT_ID,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET
-        }),
+        ...authConfig.providers!,
         Credentials({
             name: "credentials",
             credentials: {
-                email: { label: "Email", type: "email"},
-                password: { label: "Password", type: "password"},
+                email: { label: "Email", type: "email" },
+                password: { label: "Password", type: "password" },
             },
-            async authorize (credentials) {
-                if(!credentials?.email || !credentials?.password) {
-                    throw new Error("Email and password are required");
-                }
-
-                const user = await prisma.user.findUnique({
-                    where: {
-                        email: credentials.email as string
+            async authorize(credentials) {
+                try {
+                    if (!credentials?.email || !credentials?.password) {
+                        return null;
                     }
-                });
 
-                if(!user || !user.password) {
-                    throw new Error("No account found with this email");
+                    const user = await prisma.user.findUnique({
+                        where: { email: credentials.email as string },
+                        include: { accounts: true },
+                    });
+
+                    if (user && !user.password) {
+                        const hasGoogleAccount = user.accounts.some(
+                            (acc) => acc.provider === "google"
+                        );
+                        if (hasGoogleAccount) return null;
+                    }
+
+                    if (!user || !user.password) return null;
+
+                    const isPasswordValid = await bcrypt.compare(
+                        credentials.password as string,
+                        user.password
+                    );
+
+                    if (!isPasswordValid) return null;
+
+                    return {
+                        id: user.id,
+                        email: user.email,
+                        name: user.name,
+                        image: user.image,
+                    };
+                } catch (error) {
+                    console.error("Authorize error:", error);
+                    return null;
                 }
-
-                const isPasswordValid = await bcrypt.compare(
-                    credentials.password as string,
-                    user.password
-                )
-
-                if(!isPasswordValid) {
-                    throw new Error("Invalid password");
-                }
-
-                return {
-                    id: user.id,
-                    email: user.email,
-                    name: user.name,
-                    image: user.image
-                }
-            }
-        })
+            },
+        }),
     ],
-    session: {
-        strategy: "jwt",
-    }, 
+
     pages: {
         signIn: "/signin",
-        error: "/sigin"
+        error: "/signin",
     },
+
     callbacks: {
-        async jwt ({ token, user, trigger, session }) {
-            if(user) {
-                token.id = user.id
-            }
+        async signIn({ user, account, profile }) {
+            try {
+                if (account?.provider === "google") {
+                    const existingUser = await prisma.user.findUnique({
+                        where: { email: user.email! },
+                        include: { accounts: true },
+                    });
 
-            if(trigger === "update" && session) {
-                token = { ...token, ...session };
-            }
+                    // Case 1: New Google user — create manually
+                    if (!existingUser) {
+                        const newUser = await prisma.user.create({
+                            data: {
+                                email: user.email!,
+                                name: profile?.name ?? user.email!.split("@")[0],
+                                image: user.image ?? null,
+                            },
+                        });
 
+                        await prisma.account.create({
+                            data: {
+                                userId: newUser.id,
+                                type: "oauth",
+                                provider: "google",
+                                providerAccountId: account.providerAccountId,
+                                access_token: account.access_token ?? null,
+                                expires_at: account.expires_at ?? null,
+                                token_type: account.token_type ?? null,
+                                scope: account.scope ?? null,
+                                id_token: account.id_token ?? null,
+                            },
+                        });
+
+                        user.id = newUser.id;
+                        return true;
+                    }
+
+                    // Case 2: Existing credentials user — link Google
+                    const alreadyLinked = existingUser.accounts.some(
+                        (acc) => acc.provider === "google"
+                    );
+
+                    if (!alreadyLinked) {
+                        await prisma.account.create({
+                            data: {
+                                userId: existingUser.id,
+                                type: "oauth",
+                                provider: "google",
+                                providerAccountId: account.providerAccountId,
+                                access_token: account.access_token ?? null,
+                                expires_at: account.expires_at ?? null,
+                                token_type: account.token_type ?? null,
+                                scope: account.scope ?? null,
+                                id_token: account.id_token ?? null,
+                            },
+                        });
+
+                        if (!existingUser.image && user.image) {
+                            await prisma.user.update({
+                                where: { id: existingUser.id },
+                                data: { image: user.image },
+                            });
+                        }
+                    }
+
+                    user.id = existingUser.id;
+                }
+
+                return true;
+            } catch (error) {
+                console.error("SignIn callback error:", error);
+                return false;
+            }
+        },
+
+        async jwt({ token, user, trigger, session }) {
+            if (user) token.id = user.id;
+            if (trigger === "update" && session) token = { ...token, ...session };
             return token;
         },
-        async session ({ session, token }) {
-            if(token && session.user) {
+
+        async session({ session, token }) {
+            if (token && session.user) {
                 session.user.id = token.id as string;
             }
-
             return session;
         },
-        async redirect ({ url, baseUrl }) {
-            if(url.startsWith("/")) return `${baseUrl}${url}`;
-            if(url.startsWith(baseUrl)) return url;
 
-            return `${baseUrl}/`
+        async redirect({ url, baseUrl }) {
+            if (url.startsWith("/")) return `${baseUrl}${url}`;
+            if (url.startsWith(baseUrl)) return url;
+            return `${baseUrl}/`;
         },
-    }, events: {
-        async signIn({ user, isNewUser }) {
-            if(isNewUser) {
-                console.log(`New user signed up: ${user.email}`);
-            }
-        }
-    }
-}
+    },
 
-export const { handlers,  auth, signIn, signOut } = NextAuth(authConfig);
+    events: {
+        async signIn({ user, isNewUser }) {
+            if (isNewUser) console.log(`New user signed up: ${user.email}`);
+        },
+    },
+});
