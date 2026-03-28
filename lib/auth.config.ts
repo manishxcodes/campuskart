@@ -14,7 +14,7 @@ export const authConfig: NextAuthConfig = {
     callbacks: {
         authorized({ auth, request: { nextUrl } }) {
         const isLoggedIn = !!auth?.user;
-        const isAuthPage = nextUrl.pathname.startsWith("/signin");
+        const isAuthPage = nextUrl.pathname.startsWith("/signin") || nextUrl.pathname.startsWith("/signup");;
         const isApiAuth = nextUrl.pathname.startsWith("/api/auth");
 
         if (isApiAuth) return true;
