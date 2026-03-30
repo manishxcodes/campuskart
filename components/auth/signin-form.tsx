@@ -43,13 +43,19 @@ export function SigninForm() {
 
     if (result?.error) {
       console.log("result: ", result);
-      toast.error(result.error);
+      toast.error("Invalid email or password");
+      return;
+    }
+
+    if (result?.ok == false) {
+      console.log("result: ", result);
+      toast.error("Please sign in with Google");
       return;
     }
 
     if (result?.ok) {
       toast.success("Signed in successfully");
-      router.push("/");
+      router.push("/home");
       router.refresh();
     }
   }
@@ -94,7 +100,7 @@ export function SigninForm() {
                     {...field}
                     id="password"
                     aria-invalid={fieldState.invalid}
-                    type="password"
+                    type={"password"}
                     placeholder="Enter your password"
                   />
                   {fieldState.invalid && (
@@ -113,7 +119,7 @@ export function SigninForm() {
             type="button"
             variant={"outline"}
             className="w-full mt-4 flex items-center"
-            onClick={() => signIn("google", { callbackUrl: "/" })}
+            onClick={() => signIn("google", { callbackUrl: "/home" })}
           >
             <GoogleLogo />
             Continue with Google

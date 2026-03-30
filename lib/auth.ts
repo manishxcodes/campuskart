@@ -3,6 +3,7 @@ import { prisma } from "./prisma";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcrypt";
 import { authConfig } from "./auth.config";
+import { email } from "zod";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
     session: { strategy: "jwt" },
@@ -136,7 +137,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         },
 
         async jwt({ token, user, trigger, session }) {
-            if (user) token.id = user.id;
+            if (user) {
+                const dbUser = await prisma.user.findUnique({
+                    where: {email: user.email!},
+                });
+
+                token.id = dbUser?.id;
+                token.isProfileComplete = dbUser?.isProfileCompleted;
+            }
             if (trigger === "update" && session) token = { ...token, ...session };
             return token;
         },
@@ -144,6 +152,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         async session({ session, token }) {
             if (token && session.user) {
                 session.user.id = token.id as string;
+                session.user.isProfileCompleted = token.isProfileCompleted as boolean;
             }
             return session;
         },
