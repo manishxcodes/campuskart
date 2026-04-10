@@ -5,29 +5,30 @@ import { Container } from "./ui/container";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { signOut, useSession } from "next-auth/react";
+import { ProfileAvatar } from "./profile-avatar";
 
 export const Navbar = () => {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
 
   return (
-    <header className="w-full fixed z-10 backdrop-blur-lg border-b">
-      <Container>
-        <div className="flex h-16 items-center justify-between">
-          <Link href={"/"} className={cn("font-semibold tracking-tight")}>
-            CampusKart
-          </Link>
+    <header className="h-16 border-b flex items-center justify-between px-4 bg-background sticky top-0 z-10">
+      <Link href={"/"} className={cn("font-semibold tracking-tight")}>
+        CampusKart
+      </Link>
 
-          {session ? (
-            <Button size={"sm"} onClick={() => signOut({ callbackUrl: "/" })}>
-              Sign Out
-            </Button>
-          ) : (
-            <Link href={"/signin"}>
-              <Button size={"sm"}>Sign In</Button>
-            </Link>
-          )}
-        </div>
-      </Container>
+      {status === "loading" ? (
+        <ProfileAvatar isLoading />
+      ) : session ? (
+        <ProfileAvatar
+          profileImageUrl={session.user.image!}
+          fallbackName={session.user.name!}
+          email={session.user.email!}
+        />
+      ) : (
+        <Link href={"/signin"}>
+          <Button size={"sm"}>Sign In</Button>
+        </Link>
+      )}
     </header>
   );
 };
