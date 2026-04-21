@@ -1,17 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { Container } from "./ui/container";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { ProfileAvatar } from "./profile-avatar";
 
 export const Navbar = () => {
   const { data: session, status } = useSession();
 
   return (
-    <header className="h-16 border-b flex items-center justify-between px-4 bg-background sticky top-0 z-10">
+    <header className=" border-b flex items-center justify-between px-4 py-4 bg-background sticky top-0 z-10">
       <Link href={"/"} className={cn("font-semibold tracking-tight")}>
         CampusKart
       </Link>
