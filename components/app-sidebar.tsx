@@ -109,17 +109,36 @@ export function AppSidebar() {
                             }
                           }}
                         >
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <item.icon />
-                            </TooltipTrigger>
-                            {!open && (
+                          {open ? (
+                            <item.icon
+                              className={cn(
+                                "transition-colors",
+                                isActive ? "text-primary" : "text-muted-foreground"
+                              )}
+                            />
+                          ) : (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <item.icon
+                                  className={cn(
+                                    "transition-colors",
+                                    isActive ? "text-primary" : "text-muted-foreground"
+                                  )}
+                                />
+                              </TooltipTrigger>
                               <TooltipContent side="right">
                                 {item.title}
                               </TooltipContent>
+                            </Tooltip>
+                          )}
+                          <span
+                            className={cn(
+                              "transition-colors",
+                              isActive ? "font-semibold text-primary" : "text-muted-foreground"
                             )}
-                          </Tooltip>
-                          <span>{item.title}</span>
+                          >
+                            {item.title}
+                          </span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
