@@ -1,4 +1,6 @@
+import { AppSidebar } from "@/components/app-sidebar";
 import { Navbar } from "@/components/navbar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 export default function MainLayout({
   children,
@@ -6,9 +8,14 @@ export default function MainLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900">
-      <Navbar />
-      <main className="pt-20">{children}</main>
-    </div>
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <Navbar />
+        <main className="flex-1 overflow-y-auto p-4 bg-pink-50">
+          {children}
+        </main>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
