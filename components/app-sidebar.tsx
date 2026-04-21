@@ -1,8 +1,13 @@
+"use client";
+
 import {
   Bell,
   Heart,
   LayoutDashboard,
+  LucideShoppingCart,
   MessageCircle,
+  ShoppingBasketIcon,
+  ShoppingCart,
   User,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -19,9 +24,17 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarTrigger,
+  useSidebar,
 } from "./ui/sidebar";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "./ui/tooltip";
+import { cn } from "@/lib/utils";
 
 const items = [
   {
@@ -46,7 +59,7 @@ const items = [
   },
   {
     title: "Profile",
-    url: "/profile",
+    url: "/user/profile",
     icon: User,
   },
 ];
@@ -54,43 +67,85 @@ const items = [
 export function AppSidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const { open } = useSidebar();
 
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <div className="flex items-center justify-between px-2">
-          <span className="font-semibold">CampusKart</span>
+        <div
+          className={cn(
+            "flex items-center justify-between gap-2 px-2 py-2",
+            !open && "justify-center px-0",
+          )}
+        >
+          {open && (
+            <span className="font-semibold">
+              <LucideShoppingCart
+                height={20}
+                width={20}
+                className="text-neutral-700"
+              />
+            </span>
+          )}
           <SidebarTrigger />
         </div>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Menu</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={pathname === item.url}>
-                    <Link href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        <TooltipProvider delayDuration={1}>
+          <SidebarGroup>
+            <SidebarGroupLabel>Menu</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {items.map((item) => {
+                  const isActive = pathname === item.url || pathname.startsWith(`${item.url}/`);
+                  return (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton asChild isActive={isActive}>
+                        <Link 
+                          href={item.url}
+                          onClick={(e) => {
+                            if (pathname === item.url) {
+                              e.preventDefault();
+                            }
+                          }}
+                        >
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <item.icon />
+                            </TooltipTrigger>
+                            {!open && (
+                              <TooltipContent side="right">
+                                {item.title}
+                              </TooltipContent>
+                            )}
+                          </Tooltip>
+                          <span>{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </TooltipProvider>
       </SidebarContent>
       <SidebarFooter>
-        <div className="flex items-center gap-2 px-2 py-2">
+        <div
+          className={cn(
+            "flex items-center gap-2 px-2 py-2",
+            !open && "justify-center px-0",
+          )}
+        >
           <Avatar>
             <AvatarImage src={session?.user.image || ""} />
             <AvatarFallback>{session?.user?.name?.[0] || "U"}</AvatarFallback>
           </Avatar>
-          <div className="flex flex-col text-sm">
-            <span>{session?.user?.name || "User"}</span>
-          </div>
+          {open && (
+            <div className="flex flex-col text-sm">
+              <span>{session?.user?.name || "User"}</span>
+            </div>
+          )}
         </div>
       </SidebarFooter>
     </Sidebar>
