@@ -11,12 +11,17 @@ export async function getUserById (userId: string) {
             image: true,
             whatsappNumber: true,
             isWhatsappPublic: true,
+            password: true,
+            isProfileCompleted: true,
         }
     });
 
-    if (!user) {
-        throw new ApiError("User not found", 404);
-    }
+    if (!user) throw new ApiError("User not found", 404);
 
-    return user;
+    const { password, ...rest } = user;
+    const isPasswordSet = Boolean(password);
+
+    const userData = { ...rest, isPasswordSet}
+   
+    return userData;
 }
