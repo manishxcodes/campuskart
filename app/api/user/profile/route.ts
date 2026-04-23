@@ -3,7 +3,7 @@ import { ApiError } from "@/lib/api/api-error";
 import { ApiHandler } from "@/lib/api/api-handler";
 import { ErrorResponse, SuccessResponse } from "@/lib/api/api-response";
 import { auth } from "@/lib/auth";
-import { uploadImageToCloudinary } from "@/lib/cloudinary";
+import { uploadImageToCloudinary, deleteImageFromCloudinary } from "@/lib/cloudinary";
 import { prisma } from "@/lib/prisma";
 import { profileSchema } from "@/types/schema/profile";
 import { NextRequest } from "next/server";
@@ -23,7 +23,7 @@ export const GET = ApiHandler(async(req: Request) => {
 
 export const PATCH = ApiHandler(async (req: NextRequest) => {
     const session = await auth();
-    const userId = session?.user.id;
+    const userId = session?.user?.id;
 
     if(!userId) return ErrorResponse("Unauthorized", 401);
 
@@ -34,21 +34,27 @@ export const PATCH = ApiHandler(async (req: NextRequest) => {
 
     const { name, whatsappNumber, isWhatsappPublic, imageUrl } = parsed.data;
 
-    let newImageUrl: string | undefined;
+    const  currentUser = await getUserById(userId);
 
+    const updateData: Record<string, any> = {};
+
+    if (name) updateData.name = name;
+    if (whatsappNumber !== undefined) updateData.whatsappNumber = whatsappNumber;
+    if (isWhatsappPublic !== undefined) updateData.isWhatsappPublic = isWhatsappPublic;
+    
     if (imageUrl && imageUrl.startsWith("data:")) {
         const uploaded = await uploadImageToCloudinary(imageUrl);
-        newImageUrl = uploaded.url;
-    } 
+
+        if (currentUser.image && currentUser.image.includes("cloudinary.com")) {
+        await deleteImageFromCloudinary(currentUser.image);
+    }
+
+    updateData.image = uploaded.url;
+    }
 
     const updatedUser = await prisma.user.update({
         where: { id: userId},
-        data: {
-            ...(name && { name }),
-            ...(whatsappNumber !== undefined && { whatsappNumber }),
-            isWhatsappPublic: isWhatsappPublic,
-            ...(newImageUrl && { imageUrl})
-        },
+        data: updateData,
         select: {
             id: true,
             name: true,
@@ -60,5 +66,5 @@ export const PATCH = ApiHandler(async (req: NextRequest) => {
         }
     })
 
-    return SuccessResponse("Profile updated", updatedUser);
+    return SuccessResponse("Profile updated", {user: updatedUser});
 })
