@@ -41,7 +41,25 @@ export const setPasswordApiSchema = z.object({
     password: z.string().min(6, "Password must be at least 6 characters long"),
 });
 
+export const whatsappSchema = z.object({
+  whatsappNumber: z.string().optional().nullable().refine((data) => {
+    if (!data) return true;   
+    return /^[0-9]{10}$/.test(data);  
+  }, {
+    message: "Invalid WhatsApp number",
+    path: ["whatsappNumber"],
+  }),
+  isWhatsappPublic: z.boolean().optional(),
+}).refine((data) => {
+  return !(data.isWhatsappPublic && !data.whatsappNumber);
+}, {
+  message: "WhatsApp number is required",
+  path: ["whatsappNumber"],
+});
+
+
 
 export type ProfileFormValues = z.infer<typeof profileSchema>;
 export type UpdatePasswordFormValues = z.infer<typeof updatePasswordSchema>;
 export type SetPasswordFormValues = z.infer<typeof setPasswordSchema>;
+export type WhatsappFormValues = z.infer<typeof whatsappSchema>;
