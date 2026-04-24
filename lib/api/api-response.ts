@@ -13,10 +13,10 @@ export function SuccessResponse (
 
 export function ErrorResponse (
     message: any,
-    status = 200
+    status = 400
 ) {
     return NextResponse.json(
-        message,
+        { message },
         { status }
     );
 }
