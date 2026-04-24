@@ -3,6 +3,7 @@
 import {
   Bell,
   Heart,
+  Home,
   LayoutDashboard,
   LucideShoppingCart,
   MessageCircle,
@@ -37,6 +38,11 @@ import {
 import { cn } from "@/lib/utils";
 
 const items = [
+  {
+    title: "Home",
+    url: "/home",
+    icon: Home,
+  },
   {
     title: "My Listings",
     url: "/listings",
