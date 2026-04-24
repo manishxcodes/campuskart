@@ -20,6 +20,6 @@ export async function uploadImageToCloudinary (file: string, folder: string = "c
     };
 }
 
-export async function deleteImage(publicId: string) {
+export async function deleteImageFromCloudinary(publicId: string) {
     await cloudinary.uploader.destroy(publicId);
 }
