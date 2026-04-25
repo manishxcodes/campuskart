@@ -144,8 +144,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
                 token.id = dbUser?.id;
                 token.isProfileComplete = dbUser?.isProfileCompleted;
+                token.picture = dbUser?.image;
+                token.name = dbUser?.name;
             }
-            if (trigger === "update" && session) token = { ...token, ...session };
+            if (trigger === "update" && session) {
+                token.name = session.user?.name;
+                token.picture = session.user?.image;
+            }
             return token;
         },
 
@@ -153,6 +158,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             if (token && session.user) {
                 session.user.id = token.id as string;
                 session.user.isProfileCompleted = token.isProfileCompleted as boolean;
+                session.user.name = token?.name as string;
+                session.user.image = token?.picture as string;
             }
             return session;
         },
