@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react";
 
-export default function Hello() {
+export default function Home() {
   const { data: session } = useSession();
   console.log(session?.user.email);
   return (
