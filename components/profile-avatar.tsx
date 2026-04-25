@@ -53,7 +53,7 @@ export function ProfileAvatar({
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuGroup>
+      <DropdownMenuGroup>
           <DropdownMenuLabel className="text-muted-foreground flex items-center gap-2">
             <User height={14} width={14} />
             {fallbackName}
