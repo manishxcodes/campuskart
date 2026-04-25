@@ -11,7 +11,6 @@ import {
 import { signOut } from "next-auth/react";
 import { Mail, User } from "lucide-react";
 import { Spinner } from "./ui/spinner";
-import { string } from "zod";
 import { useRouter } from "next/navigation";
 
 interface ProfileAvatarProps {
