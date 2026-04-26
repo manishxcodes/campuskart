@@ -3,7 +3,7 @@ import { prisma } from "./prisma";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcrypt";
 import { authConfig } from "./auth.config";
-import { email } from "zod";
+
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
     session: { strategy: "jwt" },
@@ -98,6 +98,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                         return true;
                     }
 
+                    // Reject banned users
+                    if (existingUser.isBanned) {
+                        return false;
+                    }
+
                     // Case 2: Existing credentials user — link Google
                     const alreadyLinked = existingUser.accounts.some(
                         (acc) => acc.provider === "google"
@@ -127,6 +132,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                     }
 
                     user.id = existingUser.id;
+                } else {
+                    // Credentials provider: check banned status
+                    const dbUser = await prisma.user.findUnique({
+                        where: { email: user.email! },
+                        select: { isBanned: true },
+                    });
+                    if (dbUser?.isBanned) {
+                        return false;
+                    }
                 }
 
                 return true;
@@ -146,6 +160,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 token.isProfileComplete = dbUser?.isProfileCompleted;
                 token.picture = dbUser?.image;
                 token.name = dbUser?.name;
+
+                // Check if user is admin
+                const adminRecord = await prisma.admin.findUnique({
+                    where: { email: user.email! },
+                });
+                token.isAdmin = !!adminRecord;
             }
             if (trigger === "update" && session) {
                 token.name = session.user?.name;
@@ -158,6 +178,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             if (token && session.user) {
                 session.user.id = token.id as string;
                 session.user.isProfileCompleted = token.isProfileCompleted as boolean;
+                session.user.isAdmin = (token.isAdmin as boolean) ?? false;
                 session.user.name = token?.name as string;
                 session.user.image = token?.picture as string;
             }
