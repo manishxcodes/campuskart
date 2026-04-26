@@ -17,10 +17,14 @@ model User {
   createdAt          DateTime  @default(now())
   isProfileCompleted Boolean   @default(false)
   isWhatsappPublic   Boolean   @default(false)
+  isBanned           Boolean   @default(false)
+  isDeleted          Boolean   @default(false)
   updatedAt          DateTime  @updatedAt
   whatsappNumber     String?
   accounts           Account[]
   sessions           Session[]
+  products           Product[]
+  wishlists          Wishlist[]
 }
 
 model Account {
@@ -55,4 +59,44 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model Admin {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  createdAt DateTime  @default(now())
+  products  Product[]
+}
+
+model Product {
+  id          String     @id @default(cuid())
+  title       String
+  description String
+  price       Float
+  images      String[]
+  isDeleted   Boolean    @default(false)
+  isBanned    Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId  String
+  category    Category   @relation(fields: [categoryId], references: [id])
+  wishlists   Wishlist[]
+}
+
+model Wishlist {
+  id        String  @id @default(cuid())
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
 }
