@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   LucideShoppingCart,
   MessageCircle,
+  Shield,
   ShoppingBasketIcon,
   ShoppingCart,
   User,
@@ -75,6 +76,20 @@ export function AppSidebar() {
   const { data: session } = useSession();
   const { open } = useSidebar();
 
+  // Build menu items dynamically based on admin status
+  const menuItems = [
+    ...items,
+    ...(session?.user?.isAdmin
+      ? [
+          {
+            title: "Admin Dashboard",
+            url: "/admin-dashboard",
+            icon: Shield,
+          },
+        ]
+      : []),
+  ];
+
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
@@ -102,7 +117,7 @@ export function AppSidebar() {
             <SidebarGroupLabel>Menu</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {items.map((item) => {
+                {menuItems.map((item) => {
                   const isActive = pathname === item.url || pathname.startsWith(`${item.url}/`);
                   return (
                     <SidebarMenuItem key={item.title}>
