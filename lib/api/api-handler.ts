@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { ApiError } from "./api-error";
 import { ErrorResponse } from "./api-response";
 
-export function ApiHandler (
-    handler: (req: NextRequest) => Promise<NextResponse>
+export function ApiHandler(
+    handler: (req: NextRequest, context?: any) => Promise<NextResponse>
 ) {
-    return async (req: NextRequest): Promise<NextResponse> => {
+    return async (req: NextRequest, context?: any): Promise<NextResponse> => {
         try {
-            return await handler(req);
+            return await handler(req, context);
         } catch (error: any) {
             console.log("API error", error);
 
