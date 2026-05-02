@@ -47,6 +47,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { Badge } from "@/components/ui/badge";
 
 interface UserProfile {
     id: string;
@@ -100,6 +101,7 @@ export default function UserProfilePage() {
 
     const router = useRouter();
     const { update } = useSession();
+    const { data: session } = useSession();
 
     const profileForm = useForm<ProfileFormValues>({
         resolver: zodResolver(profileSchema),
@@ -304,14 +306,14 @@ export default function UserProfilePage() {
 
     if (isFetching) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
+            <div className="h-full bg-background flex items-center justify-center">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-background p-4 md:p-8">
+        <div className="h-full bg-background p-4 md:p-8">
             <div className="max-w-4xl mx-auto space-y-6">
 
                 <div>
@@ -420,7 +422,9 @@ export default function UserProfilePage() {
                     <div className="flex flex-col gap-4">
                       <Card>
                         <CardHeader>
-                          <CardTitle>Email</CardTitle>
+                          <CardTitle className="flex items-center justify-between">Email
+                            {session?.user.isAdmin && <Badge className="bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300" variant={"secondary"}>Admin</Badge>}
+                          </CardTitle>
                           <CardDescription>{userData?.email}</CardDescription>
                         </CardHeader>
                       </Card>
