@@ -156,6 +156,7 @@ export default function Home() {
   return (
     <div className="h-full space-y-6 bg-background p-4 md:p-8">
       {/* Header */}
+      <div className="flex items-center justify-between">
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight">
           Explore Marketplace
@@ -175,6 +176,7 @@ export default function Home() {
           onChange={(e) => setSearch(e.target.value)}
           className="pl-9 h-10"
         />
+      </div>
       </div>
 
       {/* Categories */}
