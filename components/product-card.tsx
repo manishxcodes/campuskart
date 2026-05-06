@@ -4,6 +4,8 @@ import { Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
+import { toast } from "sonner";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 interface ProductCardProps {
   id: string;
@@ -54,6 +56,12 @@ export function ProductCard({
     try {
       const method = wishlisted ? "DELETE" : "POST";
       const res = await fetch(`/api/wishlist/${id}`, { method });
+
+      if (!res.ok) {
+        const data = await res.json();
+        toast(data.message);
+      }
+
       if (res.ok) {
         setWishlisted(!wishlisted);
         onWishlistToggle?.(id, !wishlisted);
@@ -81,7 +89,7 @@ export function ProductCard({
           <img
             src={images[imgIdx] || images[0]}
             alt={title}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 rounded-md"
+            className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105 rounded-md"
           />
         ) : (
           <div className="flex h-full items-center justify-center text-muted-foreground text-sm">
@@ -129,7 +137,7 @@ export function ProductCard({
           </h3>
 
           {/* Wishlist button */}
-          {!showWishlist && (
+          {showWishlist && (
             <button
               onClick={handleWishlist}
               disabled={wishlistLoading}
@@ -148,6 +156,7 @@ export function ProductCard({
               />
             </button>
           )}
+
         </div>
         <div className="flex items-center">
           <span className="text-mediun font-semibold text-primary mr-1">₹{sellingPrice.toLocaleString("en-IN")}</span>
@@ -156,7 +165,7 @@ export function ProductCard({
         </div>
 
         <div className="mb-2">
-          <p className="text-xs text-muted-foreground">{description?.substring(0,200)}{description!.length>200?"...":""}</p>
+          <p className="text-xs text-muted-foreground">{description?.substring(0,100)}{description!.length>200?"...":""}</p>
         </div>
 
         <div className="flex items-center justify-between gap-2">
@@ -169,11 +178,12 @@ export function ProductCard({
 
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             {seller.image ? (
-              <img
-                src={seller.image}
-                alt=""
-                className="h-4 w-4 rounded-full object-cover"
-              />
+              <Avatar className="h-4 w-4">
+                <AvatarImage src={seller.image} />
+                <AvatarFallback className=" bg-black text-white font-semibold text-sm">
+                  {seller.name?.[0] || "U"}
+                </AvatarFallback>
+              </Avatar>
             ) : (
               <div className="h-4 w-4 rounded-full bg-muted flex items-center justify-center text-[8px] font-medium">
                 {seller.name?.[0] || "?"}
