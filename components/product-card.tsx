@@ -180,7 +180,7 @@ export function ProductCard({
             {seller.image ? (
               <Avatar className="h-4 w-4">
                 <AvatarImage src={seller.image} />
-                <AvatarFallback className=" bg-black text-white font-semibold text-sm">
+                <AvatarFallback className=" bg-neutral-200 text-neutral-900  text-sm">
                   {seller.name?.[0] || "U"}
                 </AvatarFallback>
               </Avatar>
