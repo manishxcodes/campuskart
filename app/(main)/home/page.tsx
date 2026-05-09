@@ -6,8 +6,9 @@ import { ProductCard } from "@/components/product-card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, SlidersHorizontal, Package } from "lucide-react";
+import { Search, Package } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 interface Category {
   id: string;
@@ -48,6 +49,8 @@ export default function Home() {
 
   const observerRef = useRef<HTMLDivElement>(null);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+
+  const router = useRouter();
 
   // Debounce search
   useEffect(() => {
@@ -239,7 +242,8 @@ export default function Home() {
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {products.map((product) => (
-              <ProductCard
+              <ProductCard 
+                onClick={() => router.push(`/product/${product.id}`)}
                 key={product.id}
                 id={product.id}
                 title={product.title}
