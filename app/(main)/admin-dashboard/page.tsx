@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface AdminUser {
   id: string;
@@ -306,14 +307,15 @@ export default function AdminDashboardPage() {
                       <TableCell>
                         <div className="flex items-center gap-2">
                           {user.image ? (
-                            <img
-                              src={user.image}
-                              alt=""
-                              className="h-7 w-7 rounded-full object-cover"
-                            />
+                            <Avatar className="h-4 w-4">
+                              <AvatarImage src={user.image} />
+                              <AvatarFallback className=" bg-neutral-200 text-neutral-900  text-sm">
+                                {user.name?.[0] || "U"}
+                              </AvatarFallback>
+                            </Avatar>
                           ) : (
-                            <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center text-xs font-medium">
-                              {user.name?.[0] || "?"}
+                            <div className="h-4 w-4 rounded-full bg-muted flex items-center justify-center text-[8px] font-medium">
+                              {user.name?.[0] || "U"}
                             </div>
                           )}
                           <span className="text-sm font-medium">
@@ -346,7 +348,7 @@ export default function AdminDashboardPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-7 px-2 text-xs"
+                            className="h-7 px-2 text-xs cursor-pointer"
                             onClick={() =>
                               setBanDialog({
                                 type: "user",
@@ -371,7 +373,7 @@ export default function AdminDashboardPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-7 px-2 text-xs text-destructive hover:text-destructive"
+                            className="h-7 px-2 text-xs text-destructive hover:text-destructive cursor-pointer"
                             onClick={() =>
                               setDeleteDialog({
                                 type: "user",
@@ -483,7 +485,7 @@ export default function AdminDashboardPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-7 px-2 text-xs"
+                            className="h-7 px-2 text-xs cursor-pointer"
                             onClick={() =>
                               setBanDialog({
                                 type: "product",
@@ -508,7 +510,7 @@ export default function AdminDashboardPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-7 px-2 text-xs text-destructive hover:text-destructive"
+                            className="h-7 px-2 text-xs text-destructive hover:text-destructive cursor-pointer"
                             onClick={() =>
                               setDeleteDialog({
                                 type: "product",
