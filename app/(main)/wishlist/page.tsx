@@ -13,7 +13,9 @@ interface WishlistItem {
     id: string;
     title: string;
     description: string;
-    price: number;
+    sellingPrice: number;
+    originalPrice: number;
+    discount: number;
     images: string[];
     isBanned: boolean;
     isDeleted: boolean;
@@ -95,7 +97,10 @@ export default function WishlistPage() {
                 key={item.id}
                 id={item.product.id}
                 title={item.product.title}
-                price={item.product.price}
+                description={item.product.description}
+                sellingPrice={item.product.sellingPrice}
+                originalPrice={item.product.originalPrice}
+                discount={item.product.discount}
                 images={item.product.images}
                 category={item.product.category}
                 seller={item.product.user}
