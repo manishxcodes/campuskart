@@ -194,7 +194,7 @@ export function AppSidebar() {
                             <div className="relative">
                               <item.icon
                                 className={cn(
-                                  "transition-colors",
+                                  "transition-colors h-4 w-4",
                                   isActive ? "text-primary" : "text-muted-foreground"
                                 )}
                               />
