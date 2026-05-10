@@ -1,6 +1,7 @@
 import { ApiError } from "@/lib/api/api-error";
 import { prisma } from "@/lib/prisma";
 import { deleteProductImages } from "@/lib/cloudinary";
+import { Prisma } from "@prisma/client";
 
 export async function getAllUsers() {
   return prisma.user.findMany({
@@ -33,7 +34,7 @@ export async function banUser(id: string, isBanned: boolean) {
   if (isAdmin) throw new ApiError("Cannot ban an admin user", 400);
 
   // Use transaction to ban user + auto-ban/unban their products
-  return prisma.$transaction(async (tx) => {
+  return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     const updatedUser = await tx.user.update({
       where: { id },
       data: { isBanned },
