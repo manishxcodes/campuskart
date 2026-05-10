@@ -55,10 +55,10 @@ export default function WishlistPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-white h-full">
       {/* Header */}
-      <div className="flex items-center gap-2">
-        <Heart className="h-5 w-5 text-red-500" />
+      <div className="flex  gap-2">
+        <Heart className="h-5 w-5 text-red-500 ml-2 mt-2" />
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Wishlist</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
