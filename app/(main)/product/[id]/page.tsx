@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { MakeOfferModal } from '@/components/make-offer-modal';
@@ -43,14 +43,45 @@ interface Product {
 export default function ProductDetailPage() {
   const params = useParams();
   const id = params.id as string;
+  const router = useRouter();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [showMakeOfferModal, setShowMakeOfferModal] = useState(false);
+  const [chatLoading, setChatLoading] = useState(false);
 
   const session = useSession();
   const userEmail = session.data?.user?.email;
+  const userId = session.data?.user?.id;
+  const isOwnProduct = product?.user?.id === userId;
+
+  const handleChat = async () => {
+    if (!product || !userId || isOwnProduct) return;
+
+    setChatLoading(true);
+    try {
+      const res = await fetch('/api/chat/conversations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productId: product.id,
+          sellerId: product.user.id,
+        }),
+      });
+
+      if (!res.ok) throw new Error('Failed to start chat');
+
+      const data = await res.json();
+      const conversationId = data.data.conversation.id;
+      router.push(`/chats?conversation=${conversationId}`);
+    } catch (error) {
+      console.error('Failed to start chat:', error);
+      toast.error('Failed to start chat. Please try again.');
+    } finally {
+      setChatLoading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -258,9 +289,15 @@ export default function ProductDetailPage() {
               <Button
                 variant="outline"
                 className="flex-1 h-12 text-base font-medium"
+                onClick={handleChat}
+                disabled={isOwnProduct || chatLoading}
               >
-                <MessageCircle className="mr-2 h-5 w-5" />
-                Chat
+                {chatLoading ? (
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                ) : (
+                  <MessageCircle className="mr-2 h-5 w-5" />
+                )}
+                {isOwnProduct ? 'Your Product' : 'Chat'}
               </Button>
             </div>
           </div>
