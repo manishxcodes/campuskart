@@ -8,23 +8,27 @@ datasource db {
 }
 
 model User {
-  id                 String    @id @default(cuid())
-  name               String?
-  email              String    @unique
-  emailVerified      DateTime?
-  image              String?
-  password           String?
-  createdAt          DateTime  @default(now())
-  isProfileCompleted Boolean   @default(false)
-  isWhatsappPublic   Boolean   @default(false)
-  isBanned           Boolean   @default(false)
-  isDeleted          Boolean   @default(false)
-  updatedAt          DateTime  @updatedAt
-  whatsappNumber     String?
-  accounts           Account[]
-  sessions           Session[]
-  products           Product[]
-  wishlists          Wishlist[]
+  id                    String         @id @default(cuid())
+  name                  String?
+  email                 String         @unique
+  emailVerified         DateTime?
+  image                 String?
+  password              String?
+  createdAt             DateTime       @default(now())
+  isProfileCompleted    Boolean        @default(false)
+  isWhatsappPublic      Boolean        @default(false)
+  isBanned              Boolean        @default(false)
+  isDeleted             Boolean        @default(false)
+  updatedAt             DateTime       @updatedAt
+  whatsappNumber        String?
+  accounts              Account[]
+  sessions              Session[]
+  products              Product[]
+  wishlists             Wishlist[]
+  buyerConversations    Conversation[] @relation("BuyerConversations")
+  sellerConversations   Conversation[] @relation("SellerConversations")
+  messages              Message[]
+  notifications         Notification[]
 }
 
 model Account {
@@ -75,7 +79,7 @@ model Category {
 }
 
 model Product {
-  id               String     @id @default(cuid())
+  id               String         @id @default(cuid())
   title            String
   description      String
   condition        String
@@ -83,15 +87,16 @@ model Product {
   discount         Float
   sellingPrice     Float
   images           String[]
-  isDeleted        Boolean    @default(false)
-  isBanned         Boolean    @default(false)
-  createdAt        DateTime   @default(now())
-  updatedAt        DateTime   @updatedAt
+  isDeleted        Boolean        @default(false)
+  isBanned         Boolean        @default(false)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
   userId           String
-  user             User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   categoryId       String
-  category         Category   @relation(fields: [categoryId], references: [id])
+  category         Category       @relation(fields: [categoryId], references: [id])
   wishlists        Wishlist[]
+  conversations    Conversation[]
 }
 
 model Wishlist {
@@ -102,4 +107,42 @@ model Wishlist {
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([userId, productId])
+}
+
+model Conversation {
+  id        String    @id @default(cuid())
+  productId String
+  product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  buyerId   String
+  buyer     User      @relation("BuyerConversations", fields: [buyerId], references: [id], onDelete: Cascade)
+  sellerId  String
+  seller    User      @relation("SellerConversations", fields: [sellerId], references: [id], onDelete: Cascade)
+  messages  Message[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@unique([productId, buyerId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  content        String
+  senderId       String
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  isRead         Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  title     String
+  body      String
+  link      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
 }
